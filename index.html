@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Floor Function Lab — Interactive Math</title>
+
+<style>
+:root{
+  color-scheme:light;
+  --bg:#f6f5f2;--paper:#fffefa;--ink:#20202a;--mut:#777784;--line:#e4e1dc;
+  --acc:#6554d9;--acc-hover:#5141c4;--soft:#efedff;--err:#b42332;
+  --shadow:0 14px 40px rgba(35,29,65,.055);--radius:18px;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;--bg:#141419;--paper:#1c1c24;--ink:#f2f0f8;--mut:#aaa7b8;
+  --line:#34323e;--acc:#a69aff;--acc-hover:#b8afff;--soft:#2a273b;--err:#ff929c;
+  --shadow:0 16px 44px rgba(0,0,0,.18)
+}
+*{box-sizing:border-box}
+html{min-height:100%;background:var(--bg);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;transition:background .35s,color .35s}
+/* Persian uses locally available system fonts only: no remote font dependency. */
+html[lang="fa"] body{font-family:"Vazirmatn",Tahoma,"Noto Sans Arabic UI","Noto Sans Arabic","Segoe UI",sans-serif;line-height:1.8}
+html[lang="fa"] .brand-name,html[lang="fa"] .brand-note,html[lang="fa"] .eyebrow,html[lang="fa"] .section-title,html[lang="fa"] .hint,html[lang="fa"] .preset-label,html[lang="fa"] button,html[lang="fa"] label,html[lang="fa"] .sub,html[lang="fa"] #cap,html[lang="fa"] th,html[lang="fa"] td,html[lang="fa"] .footer-note{letter-spacing:0}
+html[dir="rtl"] .topbar,html[dir="rtl"] .results-head{direction:rtl}
+html[dir="rtl"] .intro,html[dir="rtl"] .workspace,html[dir="rtl"] .footer-note{direction:rtl}
+html[dir="rtl"] .eyebrow,html[dir="rtl"] .section-title,html[dir="rtl"] .sub,html[dir="rtl"] .hint,html[dir="rtl"] .preset-label,html[dir="rtl"] #err,html[dir="rtl"] .brand-name,html[dir="rtl"] .brand-note,html[dir="rtl"] #cap,html[dir="rtl"] .results-head{text-align:right}
+html[dir="rtl"] .ctl,html[dir="rtl"] .lg,html[dir="rtl"] .preset-list{direction:rtl}
+html[dir="rtl"] th,html[dir="rtl"] td{text-align:right}
+html[dir="rtl"] input[type="text"]{direction:ltr;text-align:left;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+html[dir="rtl"] .m,html[dir="rtl"] .big,html[dir="rtl"] td .m{direction:ltr;unicode-bidi:isolate}
+#lang-toggle{width:auto;min-width:48px;padding:0 12px;font-size:.86rem;font-weight:800}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.w{max-width:1180px;margin:0 auto;padding:28px 28px 56px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:34px}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--soft);color:var(--acc);font:700 1.2rem Georgia,serif;border:1px solid color-mix(in srgb,var(--acc) 18%,transparent);animation:mark-arrive .75s cubic-bezier(.2,.8,.2,1) both;transition:transform .35s cubic-bezier(.2,.8,.2,1),border-radius .35s,background .25s}.brand:hover .brand-mark{transform:rotate(-7deg) scale(1.07);border-radius:16px}
+.brand-name{font-size:1rem;font-weight:750;letter-spacing:-.035em}
+.brand-note{font-size:.78rem;color:var(--mut);margin-top:1px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.icon-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:42px;height:42px;padding:0;border:1px solid var(--line);border-radius:13px;background:var(--paper);color:var(--ink);transition:border-color .18s,transform .18s}
+.icon-button:hover{border-color:var(--acc);transform:translateY(-2px) rotate(-4deg)}
+#theme-icon{transition:transform .45s cubic-bezier(.2,.8,.2,1)}.icon-button:hover #theme-icon{transform:rotate(22deg) scale(1.08)}
+.intro{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;margin:0 0 24px}
+h1{font-size:clamp(2rem,4vw,3.2rem);line-height:1.06;letter-spacing:-.065em;font-weight:760;margin:0;max-width:720px;animation:rise-in .75s .1s cubic-bezier(.2,.8,.2,1) both}
+.intro .eyebrow{animation:rise-in .6s cubic-bezier(.2,.8,.2,1) both}.sub{animation:rise-in .75s .2s cubic-bezier(.2,.8,.2,1) both}
+.sub{color:var(--mut);font-size:1rem;margin:12px 0 0;max-width:650px}
+.m{font-family:"Cambria Math","STIX Two Math","Times New Roman",serif}
+.eyebrow{font-size:.72rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--acc);margin:0 0 9px}
+.workspace{display:grid;grid-template-columns:minmax(270px,.78fr) minmax(0,1.7fr);gap:18px;align-items:start}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow);margin-bottom:18px;transition:transform .28s cubic-bezier(.2,.8,.2,1),border-color .28s,box-shadow .28s,background .3s;animation:card-arrive .65s cubic-bezier(.2,.8,.2,1) both}.input-card{animation-delay:.08s}.visual-column>.steps{animation:rise-in .55s .12s both}.visual-column>.stage{animation:rise-in .7s .18s cubic-bezier(.2,.8,.2,1) both}.visual-column>.ctl{animation:rise-in .6s .26s both}.visual-column>.lg{animation:rise-in .6s .32s both}.results-card{animation-delay:.16s}@media(hover:hover){.card:hover{border-color:color-mix(in srgb,var(--acc) 22%,var(--line));box-shadow:0 18px 44px rgba(35,29,65,.085);transform:translateY(-2px)}}
+.input-card{position:sticky;top:18px}
+.section-title{font-size:.96rem;font-weight:750;letter-spacing:-.02em;margin:0 0 14px}
+#f{display:flex;flex-direction:column;gap:12px}
+input[type=text]{width:100%;min-width:0;font:600 1rem ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.025em;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:14px 15px;min-height:54px;transition:border-color .18s,box-shadow .18s}
+input[type=text]:focus{border-color:var(--acc);outline:none;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 18%,transparent)}
+button,select{font-weight:650;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:10px 13px;transition:background .18s,border-color .18s,transform .18s}
+button:hover{border-color:var(--acc)}button{transition:background .2s,border-color .2s,transform .2s cubic-bezier(.2,.8,.2,1),box-shadow .2s}button.p:hover{box-shadow:0 7px 18px color-mix(in srgb,var(--acc) 24%,transparent)}button.p:active{transform:scale(.985)}
+button:active{transform:translateY(1px)}
+button.p{background:var(--acc);color:#fff;border-color:var(--acc);min-height:46px}
+:root[data-theme="dark"] button.p{color:#171322}
+button.p:hover{background:var(--acc-hover);border-color:var(--acc-hover)}
+button.chip{padding:7px 10px;font-size:.82rem;background:transparent;border-color:var(--line);color:var(--mut);border-radius:9px}
+button.chip:hover{background:var(--soft);color:var(--ink);border-color:var(--acc)}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid color-mix(in srgb,var(--acc) 55%,transparent);outline-offset:2px}
+.hint{color:var(--mut);font-size:.82rem;margin-top:10px;line-height:1.55}
+.preset-label{font-size:.76rem;color:var(--mut);font-weight:700;margin:19px 0 9px}
+.preset-list{display:flex;gap:7px;flex-wrap:wrap}
+#err{color:var(--err);font-weight:650;font-size:.85rem;min-height:1.35em;margin:2px 0 0}
+.steps{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 12px}
+.steps span{padding:6px 10px;border-radius:8px;background:var(--paper);border:1px solid var(--line);color:var(--mut);font-weight:700;font-size:.76rem;transition:background .2s,color .2s,border-color .2s}
+.steps span.on{background:var(--soft);color:var(--acc);border-color:color-mix(in srgb,var(--acc) 35%,var(--line));animation:step-pop .35s cubic-bezier(.2,.8,.2,1) both}
+.stage{border-radius:var(--radius);overflow:hidden;background:#111323;border:1px solid rgba(255,255,255,.08);box-shadow:0 20px 50px rgba(19,15,45,.13);transition:box-shadow .35s,transform .35s;transform:translateZ(0)}.stage:hover{box-shadow:0 24px 58px rgba(74,62,150,.2),0 0 0 1px rgba(166,154,255,.13)}
+canvas{display:block;width:100%;height:auto;aspect-ratio:10/7}
+#cap{padding:15px 20px;font-size:.93rem;font-weight:550;min-height:4.3em;background:var(--paper);color:var(--ink);border-top:1px solid var(--line)}
+.ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:13px 2px 4px}
+.ctl button{padding:8px 12px;font-size:.85rem}
+.ctl label{display:flex;align-items:center;gap:7px;color:var(--mut);font-size:.82rem;font-weight:650}
+.ctl select{padding:7px 9px;font-size:.83rem}
+#sl{flex:1;min-width:100px;accent-color:var(--acc)}
+.lg{display:flex;gap:18px;flex-wrap:wrap;color:var(--mut);font-weight:600;font-size:.8rem;margin:12px 0 22px}
+.lg i,.dot{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:7px}
+#fin{display:none;border:1px solid color-mix(in srgb,var(--acc) 45%,var(--line));background:var(--soft);box-shadow:none}
+#fin.on{display:block}
+#fin .big{text-align:center;font-size:clamp(1.25rem,3vw,1.65rem);margin:10px 0 14px;color:var(--acc)}
+#fin p{margin:0;color:var(--mut);font-size:.9rem}
+.results-card{padding:0;overflow:hidden}
+.results-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:21px 22px;border-bottom:1px solid var(--line)}
+.results-head .section-title{margin:0}
+.results-head button{font-size:.82rem;padding:8px 11px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.87rem}
+th,td{padding:12px 14px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{color:var(--mut);font-size:.72rem;text-transform:uppercase;letter-spacing:.075em;font-weight:750;background:color-mix(in srgb,var(--bg) 55%,var(--paper))}
+tbody tr:last-child td{border-bottom:0}
+tr.r{opacity:.18;transform:translateY(7px);transition:opacity .4s,transform .4s}tr.r.on{opacity:1;transform:translateY(0);animation:row-arrive .42s cubic-bezier(.2,.8,.2,1) both}tr.r.on td{animation:cell-flash .7s ease-out both}tr.r.on td:nth-child(2){animation-delay:.04s}tr.r.on td:nth-child(3){animation-delay:.08s}tr.r.on td:nth-child(4){animation-delay:.12s}tr.r.on td:nth-child(5){animation-delay:.16s}
+td:last-child{color:var(--mut);font-size:.82rem}
+#pimg{display:none;width:100%;margin-top:10px;border-radius:8px}
+.footer-note{display:flex;justify-content:space-between;gap:16px;color:var(--mut);font-size:.76rem;margin-top:22px;animation:rise-in .6s .35s both}
+@keyframes rise-in{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@keyframes card-arrive{from{opacity:0;transform:translateY(13px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes mark-arrive{0%{opacity:0;transform:rotate(-20deg) scale(.65)}70%{transform:rotate(5deg) scale(1.08)}100%{opacity:1;transform:rotate(0) scale(1)}}
+@keyframes step-pop{0%{transform:scale(.94)}65%{transform:scale(1.045)}100%{transform:scale(1)}}
+@keyframes row-arrive{0%{opacity:.2;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes cell-flash{0%{background:color-mix(in srgb,var(--acc) 14%,transparent)}100%{background:transparent}}
+#fin.on{animation:result-reveal .6s cubic-bezier(.2,.8,.2,1) both}
+@keyframes result-reveal{from{opacity:0;transform:translateY(12px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+#cap{transition:background .3s,color .3s}
+#sl{cursor:ew-resize}
+.brand-name{transition:letter-spacing .25s}.brand:hover .brand-name{letter-spacing:-.015em}
+@media(max-width:820px){
+ .w{padding:20px 18px 42px}.topbar{margin-bottom:28px}.workspace{grid-template-columns:1fr}.input-card{position:static}
+ .intro{display:block}.intro .sub{max-width:560px}.card{padding:18px}
+ .results-head{padding:18px}.footer-note{flex-direction:column;gap:4px}
+}
+@media(max-width:520px){
+ .w{padding:16px 12px 32px}.topbar{margin-bottom:25px}.brand-mark{width:38px;height:38px}.brand-note{font-size:.72rem}
+ h1{font-size:2.15rem}.sub{font-size:.9rem}.intro{margin-bottom:20px}
+ .card{padding:15px;border-radius:14px;margin-bottom:13px}.steps{gap:5px}.steps span{font-size:.7rem;padding:5px 7px}
+ .ctl{gap:6px}.ctl button{padding:8px 10px}.ctl label{width:100%;justify-content:flex-start}
+ #sl{flex-basis:100%;order:5;width:100%}.lg{gap:12px;margin-bottom:16px}
+ #cap{padding:13px 15px;font-size:.86rem}.results-head{padding:15px}
+ th,td{padding:10px 11px;font-size:.8rem}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important;transform:none!important}}
+@media print{
+ :root:root:root{--bg:#fff;--paper:#fff;--ink:#000;--mut:#444;--line:#aaa;--acc:#333;--soft:#eee}
+ body{background:#fff}.topbar,.intro,.noprint,.stage,.ctl,.lg,.steps,#fin,.input-card,.footer-note{display:none!important}
+ .w{max-width:none;padding:0}.workspace{display:block}.results-card{box-shadow:none;border:0}.results-head{padding:0 0 10px}
+ tr.r{opacity:1!important}#pimg{display:block;width:100%;margin-top:10px;border-radius:8px}
+ .card{border-color:#999;box-shadow:none}
+}
+
+/* Expanded learning suite */
+.feature-suite{margin-top:44px;padding-top:34px;border-top:1px solid var(--line);animation:rise-in .7s .2s both}.suite-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:22px}.suite-title{font-size:clamp(1.7rem,3vw,2.4rem);letter-spacing:-.055em;line-height:1.1;margin:0;font-weight:760}.suite-sub{color:var(--mut);margin:9px 0 0}.present-launch{white-space:nowrap}.feature-tabs{display:flex;gap:6px;overflow-x:auto;padding:5px;background:color-mix(in srgb,var(--line) 45%,transparent);border:1px solid var(--line);border-radius:15px;margin-bottom:14px;scrollbar-width:thin}.feature-tab{flex:1;min-width:max-content;border:0;background:transparent;color:var(--mut);padding:11px 14px;border-radius:10px}.feature-tab.active{background:var(--paper);color:var(--ink);box-shadow:0 2px 8px rgba(20,20,30,.07)}.feature-panel{border:1px solid var(--line);background:var(--paper);border-radius:var(--radius);padding:clamp(16px,3vw,28px);box-shadow:var(--shadow);animation:result-reveal .35s ease both}.feature-panel[hidden]{display:none}.feature-grid{display:grid;grid-template-columns:minmax(220px,.78fr) minmax(0,1.3fr);gap:28px;align-items:center}.feature-copy h3,.challenge-layout h3{font-size:clamp(1.25rem,2vw,1.7rem);letter-spacing:-.04em;line-height:1.2;margin:0 0 10px}.feature-copy .muted,.challenge-layout .muted{color:var(--mut);font-size:.92rem;margin:0 0 20px}.muted{color:var(--mut)}.range-label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 8px;font-size:.86rem;font-weight:700}.range-label strong{color:var(--acc);font-size:1.05rem}.feature-suite input[type=range]{width:100%;accent-color:var(--acc);cursor:ew-resize}.live-result{margin-top:18px;padding:16px;border-radius:14px;background:var(--soft);display:flex;flex-direction:column;gap:5px}.live-result>span:first-child{font-size:.7rem;letter-spacing:.08em;font-weight:800}.live-result strong{font-size:1.55rem;color:var(--acc)}.live-result .muted{font-size:.88rem}.boundary-note{font-size:.84rem;line-height:1.5;min-height:2.8em;margin:13px 0 0}.chart-shell{min-width:0;background:var(--chart-bg,#111323);border-radius:16px;overflow:hidden;border:1px solid var(--line)}.chart-shell canvas{width:100%;aspect-ratio:820/460;height:auto;display:block}.chart-legend{display:flex;gap:18px;flex-wrap:wrap;padding:0 16px 14px;color:#c8cbe0;font-size:.78rem}.chart-legend span{display:inline-flex;align-items:center;gap:7px}.chart-legend i{width:9px;height:9px;border-radius:50%;display:inline-block}.legend-floor{background:#a69aff}.legend-point{background:#fbbf24}.legend-other{background:#60a5fa}.wide-select{width:100%;margin:0 0 16px;background:var(--bg)}.compare-readout{border-left:3px solid var(--acc);padding:12px 14px;background:var(--soft);border-radius:0 10px 10px 0;font-size:.9rem;line-height:1.6}.challenge-layout{display:grid;grid-template-columns:.8fr 1fr;gap:28px;align-items:center}.quiz-progress{display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:center;font-size:.82rem;color:var(--mut);margin-top:26px}.progress-track{height:6px;background:var(--line);border-radius:20px;overflow:hidden;grid-column:1/-1}.progress-track span{display:block;width:20%;height:100%;background:var(--acc);border-radius:20px;transition:width .3s}.quiz-card,.solution-card{border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg)}.quiz-kicker{font-size:.72rem;letter-spacing:.09em;color:var(--mut);font-weight:800}.quiz-expression{font-size:clamp(1.8rem,4vw,2.7rem);font-weight:700;text-align:center;padding:20px 0}.quiz-card form{display:flex;gap:8px}.quiz-card input,.solver-form input{min-width:0;flex:1;width:100%;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:12px 13px}.quiz-card input{direction:ltr;text-align:center}.quiz-card form button{white-space:nowrap}.quiz-feedback{min-height:1.6em;font-size:.88rem;font-weight:650}.quiz-feedback.good{color:#15966b}.quiz-feedback.bad,.error-text{color:var(--err)}.secondary-action{padding:9px 12px}.solver-layout{display:grid;grid-template-columns:minmax(220px,.8fr) minmax(0,1fr);gap:28px;align-items:start}.solver-form{display:flex;gap:8px}.solver-form input{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.solver-form button{white-space:nowrap}.small-note{font-size:.78rem!important;margin-top:10px!important}.solution-card{display:flex;flex-direction:column;gap:0}.solution-step{display:flex;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}.solution-step:last-of-type{border-bottom:0}.solution-step>span{display:grid;place-items:center;flex:0 0 31px;height:31px;border-radius:9px;background:var(--soft);color:var(--acc);font-size:.75rem;font-weight:800}.solution-step>div{display:flex;flex-direction:column;gap:5px;min-width:0}.solution-step small{color:var(--mut);font-size:.76rem}.solution-step strong{font-size:1.2rem;overflow-wrap:anywhere}.solution-step p{font-size:.83rem;color:var(--mut);margin:0;overflow-wrap:anywhere}.accent-answer{color:var(--acc)}.error-text{font-size:.82rem;margin:8px 0 0}.presentation-overlay{position:fixed;z-index:1000;inset:0;background:var(--bg);color:var(--ink);display:grid;place-items:center;padding:28px;overflow:auto}.presentation-overlay[hidden]{display:none}.presentation-close{position:fixed;top:20px;right:22px;width:46px;height:46px;border-radius:50%;font-size:1.7rem}.presentation-content{width:min(900px,100%);text-align:center;animation:rise-in .45s ease both}.presentation-content h2{font-size:clamp(2.5rem,7vw,5.5rem);letter-spacing:-.065em;line-height:1.05;margin:10px 0 28px}.presentation-equation{font-size:clamp(1.4rem,4vw,2.4rem);color:var(--acc);padding:22px;background:var(--soft);border-radius:18px}.presentation-explain{font-size:clamp(1rem,2vw,1.3rem);color:var(--mut);max-width:680px;margin:22px auto}.presentation-example{max-width:540px;margin:30px auto;padding:20px;border:1px solid var(--line);border-radius:18px;text-align:left}.presentation-example label{font-size:.85rem;font-weight:700}.presentation-example input{display:block;margin:18px 0;width:100%;accent-color:var(--acc)}.presentation-result{font-size:2rem}.presentation-example>div{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800;color:var(--acc);text-align:center;margin:8px 0}.presentation-example p{color:var(--mut);text-align:center}.presentation-footer{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:24px}.presentation-footer span{width:100%;font-size:.78rem;color:var(--mut);margin-bottom:5px}.presentation-content>p:last-child{color:var(--mut);font-size:.9rem}.small-note{line-height:1.5}.math-inline{direction:ltr;unicode-bidi:isolate;display:inline-block}
+html[dir=rtl] .feature-suite{text-align:right}html[dir=rtl] .feature-tabs,html[dir=rtl] .suite-heading,html[dir=rtl] .challenge-layout,html[dir=rtl] .solver-layout{direction:rtl}html[dir=rtl] .compare-readout{border-left:0;border-right:3px solid var(--acc);border-radius:10px 0 0 10px}html[dir=rtl] .quiz-card input,html[dir=rtl] .solver-form input{direction:ltr;text-align:left}html[dir=rtl] .presentation-example{text-align:right}html[dir=rtl] .presentation-close{right:auto;left:22px}
+@media(max-width:820px){.feature-grid,.challenge-layout,.solver-layout{grid-template-columns:1fr;gap:20px}.suite-heading{align-items:flex-start;flex-direction:column}.present-launch{align-self:flex-start}.feature-suite{margin-top:30px}.feature-panel{padding:18px}.chart-shell{max-width:100%}}
+@media(max-width:520px){.feature-tabs{border-radius:12px}.feature-tab{padding:10px 12px;font-size:.8rem}.quiz-card,.solution-card{padding:15px}.quiz-card form,.solver-form{flex-direction:column}.quiz-card form button,.solver-form button{width:100%}.presentation-overlay{padding:18px}.presentation-example{padding:14px}.presentation-footer button{flex:1}}
+@media(prefers-reduced-motion:reduce){.feature-panel,.feature-suite,.presentation-content{animation:none!important}}
+
+
+.function-studio-grid{grid-template-columns:minmax(220px,.72fr) minmax(0,1.35fr)}
+#studio-function{border:1px solid var(--line);border-radius:12px;padding:11px 13px;color:var(--ink);}
+#studio-x{margin-top:2px}.function-studio-grid .chart-shell{box-shadow:0 16px 36px rgba(8,8,20,.12);transition:transform .25s ease,box-shadow .25s ease}
+.function-studio-grid .chart-shell:hover{transform:translateY(-2px);box-shadow:0 20px 42px rgba(8,8,20,.18)}
+#studio-chart{touch-action:pan-y}
+@media(prefers-reduced-motion:reduce){.function-studio-grid .chart-shell{transition:none}.function-studio-grid .chart-shell:hover{transform:none}}
+</style>
+</head>
+<body>
+<div class="w">
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-mark m" aria-hidden="true">⌊x⌋</div>
+    <div><div class="brand-name" id="brand-name">Floor Function Lab</div><div class="brand-note" id="brand-note">An interactive math experiment</div></div>
+  </div>
+  <div class="header-actions">
+    <button class="icon-button" id="theme-toggle" type="button" aria-label="Switch to dark theme" title="Switch theme">
+      <svg id="theme-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/></svg>
+    </button>
+    <button class="icon-button" id="lang-toggle" type="button" aria-label="Switch to Persian" title="Switch language">فا</button>
+  </div>
+</header>
+<section class="intro">
+  <div><p class="eyebrow" id="eyebrow-main">Explore the integer below</p><h1 id="main-title">Every number has a floor.</h1>
+  <p class="sub" id="main-sub">Enter a value and watch the floor function turn it into the greatest integer less than or equal to it.</p></div>
+</section>
+
+<div class="workspace">
+<aside class="card input-card noprint"><p class="eyebrow" id="input-eyebrow">01 / Input</p><h2 class="section-title" id="input-title">Choose your numbers</h2>
+<form id="f" class="row" autocomplete="off">
+<input type="text" id="in" aria-label="Enter mathematical expressions separated by commas" value="-2, 1, 5/2, -7/2, sqrt(2), pi, -sqrt(5)">
+<button class="p" id="roll-btn" type="submit">Roll them</button>
+</form>
+<div class="hint" id="input-hint">Use 1–10 values between −9 and 9. Supports decimals, fractions, <b>pi</b>, and <b>sqrt(2)</b>.</div>
+<div class="preset-label" id="preset-label">START WITH AN EXAMPLE</div>
+<div class="preset-list">
+<button class="chip" data-v="-2, 1, 5/2, -7/2, sqrt(2), pi, -sqrt(5)" data-en="Mixed set" data-fa="ترکیبی">Mixed set</button>
+<button class="chip" data-v="-0.5, -1, -1.9, -2.5, -pi" data-en="Negatives" data-fa="منفی‌ها">Negatives</button>
+<button class="chip" data-v="3, 3.2, 3.5, 3.99, 7/2, 4" data-en="Crowded pit" data-fa="گودال شلوغ">Crowded pit</button>
+<button class="chip" data-v="0.1, 0.9, 1, 1.01, 8/3" data-en="Near the edges" data-fa="نزدیک مرزها">Near the edges</button></div>
+<div id="err" role="alert"></div>
+</aside>
+<main class="visual-column">
+<div class="steps noprint" id="st"><span data-en="1 Plot" data-fa="۱. رسم">1 Plot</span><span data-en="2 Lift" data-fa="۲. بلندکردن">2 Lift</span><span data-en="3 Dig" data-fa="۳. حفر">3 Dig</span><span data-en="4 Roll" data-fa="۴. غلتیدن">4 Roll</span><span data-en="5 Result" data-fa="۵. نتیجه">5 Result</span></div>
+<div class="stage">
+<canvas id="cv" width="1000" height="700" role="img" aria-label="Animation: points roll down the line y = x and fall into pits at the integers"></canvas>
+<div id="cap" aria-live="polite"></div>
+</div>
+<div class="ctl">
+<button id="pl" class="p">Pause</button><button id="rs">Replay</button><button id="snd">🔈 Tap to enable sound</button>
+<label><span id="speed-label">Speed</span> <select id="sp"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></label>
+<input id="sl" type="range" min="0" max="100" step="0.01" value="0" aria-label="Animation time">
+</div>
+<div class="lg"><span><i style="background:#34d399"></i><span id="type-integer">Integer</span></span><span><i style="background:#60a5fa"></i><span id="type-rational">Rational</span></span><span><i style="background:#fb7185"></i><span id="type-irrational">Irrational</span></span></div>
+
+<div class="card" id="fin"><p class="eyebrow" id="rule-label">The rule</p>
+<div class="big m">⌊x⌋ = n &nbsp;⟺&nbsp; n ≤ x &lt; n + 1</div>
+<p id="rule-explain">Each point rolls left and falls into the first pit it meets. The pit is the greatest integer less than or equal to the original value. That is why <span class="m">⌊−7/2⌋ = −4</span>, not −3.</p></div>
+
+<section class="card results-card" id="out">
+<div class="results-head"><div><p class="eyebrow" id="results-eyebrow" style="margin-bottom:4px">02 / Results</p><h2 class="section-title" id="results-title">Your results</h2></div><button id="pr" class="noprint">Print results ↗</button></div>
+<div class="table-wrap"><table><thead><tr><th id="th-number">Number</th><th id="th-type">Type</th><th id="th-value">Value</th><th>⌊x⌋</th><th id="th-because">Because</th></tr></thead><tbody id="tb"></tbody></table></div>
+<img id="pimg" alt="Final frame of the animation">
+</section>
+</main>
+</div>
+
+<section class="feature-suite" id="feature-suite" aria-label="More ways to explore the floor function">
+  <div class="suite-heading"><div><p class="eyebrow" data-en="GO DEEPER" data-fa="بیشتر کشف کنید">GO DEEPER</p><h2 class="suite-title" data-en="Your math playground." data-fa="زمین بازی ریاضی شما.">Your math playground.</h2><p class="suite-sub" data-en="Explore it, compare it, practice it — all in one place." data-fa="کشف کنید، مقایسه کنید و تمرین کنید؛ همه در یک‌جا.">Explore it, compare it, practice it — all in one place.</p></div><button class="present-launch" id="present-launch" data-en="↗ Presentation mode" data-fa="↗ حالت ارائه">↗ Presentation mode</button></div>
+  <div class="feature-tabs" role="tablist" aria-label="Math tools">
+    <button class="feature-tab active" role="tab" aria-selected="true" data-panel="playground" data-en="Live playground" data-fa="آزمایشگاه زنده">Live playground</button>
+    <button class="feature-tab" role="tab" aria-selected="false" data-panel="compare" data-en="Compare functions" data-fa="مقایسهٔ تابع‌ها">Compare functions</button>
+    <button class="feature-tab" role="tab" aria-selected="false" data-panel="challenge" data-en="Challenge" data-fa="چالش">Challenge</button>
+    <button class="feature-tab" role="tab" aria-selected="false" data-panel="solver" data-en="Step-by-step" data-fa="گام‌به‌گام">Step-by-step</button>
+    <button class="feature-tab" role="tab" aria-selected="false" data-panel="functions" data-en="Function studio" data-fa="استودیوی تابع‌ها">Function studio</button>
+  </div>
+  <section class="feature-panel active" id="panel-playground" role="tabpanel">
+    <div class="feature-grid"><div class="feature-copy"><p class="eyebrow" data-en="MOVE THE POINT" data-fa="نقطه را حرکت دهید">MOVE THE POINT</p><h3 data-en="What happens at the boundary?" data-fa="در مرز چه اتفاقی می‌افتد؟">What happens at the boundary?</h3><p class="muted" data-en="Drag the slider. The point follows x, and the floor changes only when you cross an integer." data-fa="لغزنده را جابه‌جا کنید. نقطه همراه x حرکت می‌کند و جزء صحیح فقط هنگام عبور از یک عدد صحیح تغییر می‌کند.">Drag the slider. The point follows x, and the floor changes only when you cross an integer.</p>
+      <label class="range-label" for="live-x"><span data-en="Input x" data-fa="ورودی x">Input x</span><strong class="math-inline" id="live-x-label">2.4</strong></label><input id="live-x" type="range" min="-5" max="5" step="0.01" value="2.4">
+      <div class="live-result"><span class="muted" data-en="FLOOR VALUE" data-fa="مقدار جزء صحیح">FLOOR VALUE</span><strong class="math-inline" id="live-floor">⌊2.4⌋ = 2</strong><span id="live-interval" class="muted math-inline">2 ≤ 2.4 &lt; 3</span></div>
+      <p class="boundary-note" id="boundary-note" aria-live="polite">2.4 is between 2 and 3, so its floor is 2.</p>
+    </div><div class="chart-shell"><canvas id="live-chart" width="820" height="460" aria-label="Interactive floor function graph"></canvas><div class="chart-legend"><span><i class="legend-floor"></i><span data-en="Floor graph" data-fa="نمودار جزء صحیح">Floor graph</span></span><span><i class="legend-point"></i><span data-en="Current x" data-fa="مقدار فعلی x">Current x</span></span></div></div></div>
+  </section>
+  <section class="feature-panel" id="panel-compare" role="tabpanel" hidden>
+    <div class="feature-grid"><div class="feature-copy"><p class="eyebrow" data-en="SAME INPUT, DIFFERENT RULES" data-fa="ورودی یکسان، قانون‌های متفاوت">SAME INPUT, DIFFERENT RULES</p><h3 data-en="Meet the neighboring functions." data-fa="با تابع‌های همسایه آشنا شوید.">Meet the neighboring functions.</h3><p class="muted" data-en="Choose a function to see how its output differs from the floor function." data-fa="یک تابع انتخاب کنید تا تفاوت خروجی آن با تابع جزء صحیح را ببینید.">Choose a function to see how its output differs from the floor function.</p><label class="range-label" for="compare-function"><span data-en="Compare with" data-fa="مقایسه با">Compare with</span></label><select id="compare-function" class="wide-select"><option value="ceil" data-en="Ceiling function ⌈x⌉" data-fa="تابع سقف ⌈x⌉">Ceiling function ⌈x⌉</option><option value="round" data-en="Nearest integer round(x)" data-fa="گرد کردن به نزدیک‌ترین عدد صحیح">Nearest integer round(x)</option><option value="identity" data-en="Identity function x" data-fa="تابع همانی x">Identity function x</option><option value="abs" data-en="Absolute value |x|" data-fa="قدر مطلق |x|">Absolute value |x|</option></select><div class="compare-readout" id="compare-readout" aria-live="polite">At x = 2.4: floor = 2, ceiling = 3.</div></div><div class="chart-shell"><canvas id="compare-chart" width="820" height="460" aria-label="Comparison of mathematical functions"></canvas><div class="chart-legend"><span><i class="legend-floor"></i>⌊x⌋</span><span><i class="legend-other"></i><span id="compare-legend-label">⌈x⌉</span></span></div></div></div>
+  </section>
+  <section class="feature-panel" id="panel-challenge" role="tabpanel" hidden>
+    <div class="challenge-layout"><div><p class="eyebrow" data-en="QUICK PRACTICE" data-fa="تمرین کوتاه">QUICK PRACTICE</p><h3 data-en="Can you beat five?" data-fa="از پس پنج پرسش برمی‌آیید؟">Can you beat five?</h3><p class="muted" data-en="Five questions. Negative values included. Exact integers count, too." data-fa="پنج پرسش؛ با عددهای منفی و عددهای صحیح دقیق.">Five questions. Negative values included. Exact integers count, too.</p><div class="quiz-progress"><span id="quiz-progress-text">Question 1 of 5</span><div class="progress-track"><span id="quiz-progress-bar"></span></div><strong id="quiz-score">0 / 5</strong></div></div><div class="quiz-card" id="quiz-card"><p class="quiz-kicker" data-en="WHAT IS THE FLOOR?" data-fa="جزء صحیح چیست؟">WHAT IS THE FLOOR?</p><div class="quiz-expression math-inline" id="quiz-expression">⌊−2.3⌋ = ?</div><form id="quiz-form"><input id="quiz-answer" type="text" inputmode="decimal" autocomplete="off" aria-label="Your answer" placeholder="Your answer" required><button class="p" type="submit" data-en="Check answer" data-fa="بررسی پاسخ">Check answer</button></form><p id="quiz-feedback" aria-live="polite" class="quiz-feedback"></p><button id="quiz-next" class="secondary-action" hidden data-en="Next question →" data-fa="پرسش بعدی ←">Next question →</button><button id="quiz-restart" class="secondary-action" hidden data-en="Try again ↻" data-fa="دوباره تلاش کنید ↻">Try again ↻</button></div></div>
+  </section>
+  <section class="feature-panel" id="panel-solver" role="tabpanel" hidden>
+    <div class="solver-layout"><div class="feature-copy"><p class="eyebrow" data-en="SHOW YOUR WORK" data-fa="راه‌حل را ببینید">SHOW YOUR WORK</p><h3 data-en="From expression to answer." data-fa="از عبارت تا پاسخ.">From expression to answer.</h3><p class="muted" data-en="Enter a supported expression. The solver separates evaluation from the floor operation." data-fa="یک عبارت معتبر وارد کنید. حل‌گر محاسبهٔ عبارت را از اعمال تابع جزء صحیح جدا می‌کند.">Enter a supported expression. The solver separates evaluation from the floor operation.</p><form id="solver-form" class="solver-form"><input id="solver-input" type="text" dir="ltr" value="-7/2" aria-label="Expression to solve"><button class="p" type="submit" data-en="Explain it" data-fa="توضیح بده">Explain it</button></form><p class="muted small-note" data-en="Supports +, −, ×, ÷, powers, parentheses, pi and sqrt(…)." data-fa="عملگرهای جمع، تفریق، ضرب، تقسیم، توان، پرانتز، pi و sqrt(…) پشتیبانی می‌شوند.">Supports +, −, ×, ÷, powers, parentheses, pi and sqrt(…).</p></div><div class="solution-card" id="solution-card" aria-live="polite"><div class="solution-step"><span>01</span><div><small data-en="Original expression" data-fa="عبارت اولیه">Original expression</small><strong id="solution-original" class="math-inline">−7/2</strong></div></div><div class="solution-step"><span>02</span><div><small data-en="Evaluate first" data-fa="ابتدا محاسبه کنید">Evaluate first</small><strong id="solution-evaluated" class="math-inline">−3.5</strong><p id="solution-eval-note">−7 ÷ 2 = −3.5</p></div></div><div class="solution-step"><span>03</span><div><small data-en="Take the greatest integer ≤ the value" data-fa="بزرگ‌ترین عدد صحیح ≤ مقدار را انتخاب کنید">Take the greatest integer ≤ the value</small><strong id="solution-answer" class="math-inline accent-answer">⌊−3.5⌋ = −4</strong><p id="solution-explanation">−4 ≤ −3.5 &lt; −3, so the floor is −4.</p></div></div><p id="solver-error" class="error-text" role="alert"></p></div></div>
+  </section>
+  <section class="feature-panel" id="panel-functions" role="tabpanel" hidden>
+    <div class="feature-grid function-studio-grid">
+      <div class="feature-copy">
+        <p class="eyebrow" data-en="ONE INPUT · MANY RULES" data-fa="یک ورودی · چندین قانون">ONE INPUT · MANY RULES</p>
+        <h3 data-en="Meet the function family." data-fa="با خانوادهٔ تابع‌ها آشنا شوید.">Meet the function family.</h3>
+        <p class="muted" data-en="Choose a rule and move x. The graph and output update together." data-fa="یک قانون انتخاب کنید و x را تغییر دهید؛ نمودار و خروجی هم‌زمان به‌روز می‌شوند.">Choose a rule and move x. The graph and output update together.</p>
+        <label class="range-label" for="studio-function"><span data-en="Function" data-fa="تابع">Function</span></label>
+        <select id="studio-function" class="wide-select">
+          <option value="floor" data-en="Floor · ⌊x⌋" data-fa="جزء صحیح · ⌊x⌋">Floor · ⌊x⌋</option>
+          <option value="ceil" data-en="Ceiling · ⌈x⌉" data-fa="سقف · ⌈x⌉">Ceiling · ⌈x⌉</option>
+          <option value="abs" data-en="Absolute value · |x|" data-fa="قدر مطلق · |x|">Absolute value · |x|</option>
+          <option value="identity" data-en="Identity · x" data-fa="همانی · x">Identity · x</option>
+          <option value="round" data-en="Nearest integer · round(x)" data-fa="گرد کردن · round(x)">Nearest integer · round(x)</option>
+          <option value="fraction" data-en="Fractional part · x − ⌊x⌋" data-fa="جزء کسری · x − ⌊x⌋">Fractional part · x − ⌊x⌋</option>
+          <option value="sign" data-en="Sign · sign(x)" data-fa="علامت · sign(x)">Sign · sign(x)</option>
+        </select>
+        <label class="range-label" for="studio-x"><span data-en="Input x" data-fa="ورودی x">Input x</span><strong id="studio-x-label" class="math-inline">−2.35</strong></label>
+        <input id="studio-x" type="range" min="-5" max="5" step="0.05" value="-2.35">
+        <div class="live-result"><span class="muted" data-en="OUTPUT" data-fa="خروجی">OUTPUT</span><strong id="studio-output" class="math-inline">⌊−2.35⌋ = −3</strong><span class="muted" id="studio-description" data-en="The greatest integer less than or equal to x." data-fa="بزرگ‌ترین عدد صحیح کوچک‌تر یا مساوی x.">The greatest integer less than or equal to x.</span></div>
+        <p class="boundary-note" id="studio-insight" aria-live="polite">Since −3 ≤ −2.35 &lt; −2, the floor is −3.</p>
+      </div>
+      <div class="chart-shell"><canvas id="studio-chart" width="820" height="460" aria-label="Selected function graph"></canvas><div class="chart-legend"><span><i class="legend-floor"></i><span data-en="Function graph" data-fa="نمودار تابع">Function graph</span></span><span><i class="legend-point"></i><span data-en="Current input/output" data-fa="ورودی/خروجی فعلی">Current input/output</span></span></div></div>
+    </div>
+  </section>
+</section>
+<div class="presentation-overlay" id="presentation-overlay" hidden role="dialog" aria-modal="true" aria-labelledby="presentation-title"><button class="presentation-close" id="presentation-close" aria-label="Close presentation">×</button><div class="presentation-content"><p class="eyebrow" data-en="FLOOR FUNCTION LAB · PRESENTATION" data-fa="آزمایشگاه تابع جزء صحیح · ارائه">FLOOR FUNCTION LAB · PRESENTATION</p><h2 id="presentation-title" data-en="The floor function" data-fa="تابع جزء صحیح">The floor function</h2><p class="presentation-equation math-inline">⌊x⌋ = n &nbsp;⟺&nbsp; n ≤ x &lt; n + 1</p><p class="presentation-explain" id="presentation-explain" data-en="The floor of a real number is the greatest integer less than or equal to that number." data-fa="جزء صحیح هر عدد حقیقی، بزرگ‌ترین عدد صحیح کوچک‌تر یا مساوی آن عدد است.">The floor of a real number is the greatest integer less than or equal to that number.</p><div class="presentation-example"><label for="presentation-x" data-en="Try a value" data-fa="یک مقدار را امتحان کنید">Try a value</label><input id="presentation-x" type="range" min="-9" max="9" step="0.1" value="-3.5"><div id="presentation-result" class="math-inline">⌊−3.5⌋ = −4</div><p id="presentation-interval" class="math-inline">−4 ≤ −3.5 &lt; −3</p></div><div class="presentation-footer"><span data-en="Use ← → to adjust · Esc to close" data-fa="با ← → تغییر دهید · Esc برای بستن">Use ← → to adjust · Esc to close</span><button id="presentation-prev" data-en="← Previous idea" data-fa="← نکتهٔ قبلی">← Previous idea</button><button id="presentation-next" class="p" data-en="Next idea →" data-fa="نکتهٔ بعدی →">Next idea →</button></div><p id="presentation-slide-note" data-en="Remember: floor is not the same as rounding." data-fa="به یاد داشته باشید: جزء صحیح با گرد کردن یکسان نیست.">Remember: floor is not the same as rounding.</p></div></div>
+
+<footer class="footer-note"><span id="footer-name">Floor Function Lab</span><span id="footer-note">Mathematics, made visible.</span></footer>
+</div>
+<script>
+const themeToggle=document.getElementById('theme-toggle'),themeIcon=document.getElementById('theme-icon');
+function setTheme(theme){
+ document.documentElement.dataset.theme=theme;
+ const dark=theme==='dark';
+ themeToggle.setAttribute('aria-label',dark?'Switch to light theme':'Switch to dark theme');
+ themeToggle.title=dark?'Switch to light theme':'Switch to dark theme';
+ themeIcon.innerHTML=dark
+  ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/>'
+  : '<path d="M20.9 13A8.5 8.5 0 0 1 11 3.1 8.5 8.5 0 1 0 20.9 13Z"/>';
+}
+themeToggle.addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+const langToggle=document.getElementById('lang-toggle');
+function setLang(next){
+ lang=next;const fa=lang==='fa';document.documentElement.lang=lang;document.documentElement.dir=fa?'rtl':'ltr';
+ document.title=fa?'آزمایشگاه تابع جزء صحیح — ریاضی تعاملی':'Floor Function Lab — Interactive Math';
+ themeToggle.setAttribute('aria-label',fa?'تغییر به پوستهٔ تیره':'Switch to dark theme');themeToggle.title=fa?'تغییر پوسته':'Switch theme';
+ langToggle.textContent=fa?'EN':'فا';langToggle.setAttribute('aria-label',fa?'Switch to English':'تغییر زبان به فارسی');langToggle.title=fa?'Switch to English':'تغییر زبان به فارسی';
+ const values=fa?{
+ 'brand-name':'آزمایشگاه تابع جزء صحیح','brand-note':'یک آزمایش تعاملی ریاضی','eyebrow-main':'عدد صحیحِ پایین‌تر را کشف کنید','main-title':'هر عدد، جزء صحیحی دارد.','main-sub':'یک مقدار وارد کنید و ببینید تابع جزء صحیح چگونه بزرگ‌ترین عدد صحیحِ کوچک‌تر یا مساوی آن را پیدا می‌کند.','input-eyebrow':'۰۱ / ورودی','input-title':'عددهایتان را انتخاب کنید','roll-btn':'شروع حرکت','input-hint':'از ۱ تا ۱۰ مقدار از منفی ۹ تا مثبت ۹ وارد کنید. اعشار، کسر، pi و sqrt(2) پشتیبانی می‌شوند.','preset-label':'با یک نمونه شروع کنید','speed-label':'سرعت','type-integer':'صحیح','type-rational':'گویا','type-irrational':'گنگ','rule-label':'قاعده','rule-explain':'هر نقطه به سمت چپ می‌غلتد و در نخستین گودال می‌افتد. عدد گودال، بزرگ‌ترین عدد صحیحِ کوچک‌تر یا مساوی مقدار اولیه است. برای همین ⌊−۷/۲⌋ = −۴ است، نه −۳.','results-eyebrow':'۰۲ / نتیجه‌ها','results-title':'نتیجه‌های شما','th-number':'عدد','th-type':'نوع','th-value':'مقدار','th-because':'دلیل','footer-name':'آزمایشگاه تابع جزء صحیح','footer-note':'ریاضی، دیدنی می‌شود.'
+ }: {
+ 'brand-name':'Floor Function Lab','brand-note':'An interactive math experiment','eyebrow-main':'Explore the integer below','main-title':'Every number has a floor.','main-sub':'Enter a value and watch the floor function turn it into the greatest integer less than or equal to it.','input-eyebrow':'01 / Input','input-title':'Choose your numbers','roll-btn':'Roll them','input-hint':'Use 1–10 values between −9 and 9. Supports decimals, fractions, pi, and sqrt(2).','preset-label':'START WITH AN EXAMPLE','speed-label':'Speed','type-integer':'Integer','type-rational':'Rational','type-irrational':'Irrational','rule-label':'The rule','rule-explain':'Each point rolls left and falls into the first pit it meets. The pit is the greatest integer less than or equal to the original value. That is why ⌊−7/2⌋ = −4, not −3.','results-eyebrow':'02 / Results','results-title':'Your results','th-number':'Number','th-type':'Type','th-value':'Value','th-because':'Because','footer-name':'Floor Function Lab','footer-note':'Mathematics, made visible.'
+ };
+ Object.entries(values).forEach(([id,text])=>{const el=document.getElementById(id);if(el)el.textContent=text;});
+ document.querySelectorAll('[data-en][data-fa]').forEach(el=>el.textContent=el.dataset[lang]);
+ document.querySelectorAll('#st span').forEach(el=>el.textContent=el.dataset[lang]);
+ $('pl').textContent=playing?tr('pause'):tr('play');$('rs').textContent=fa?'از نو':'Replay';$('sp').previousElementSibling.textContent=tr('speed');updSnd();
+ if(!idle)run($('in').value);else drawIdle();
+ if(typeof syncExtraLanguage==='function')syncExtraLanguage();
+}
+langToggle.addEventListener('click',()=>setLang(lang==='en'?'fa':'en'));
+const cv=document.getElementById('cv'),c=cv.getContext('2d'),W=1000,H=700;
+const cl=(v,a=0,b=1)=>Math.min(b,Math.max(a,v)),ease=t=>t*t*(3-2*t),lerp=(a,b,t)=>a+(b-a)*t,mn=s=>{const out=String(s).replace(/-/g,'−');return lang==='fa'?out.replace(/[0-9]/g,d=>'۰۱۲۳۴۵۶۷۸۹'[+d]):out};
+let lang='en';
+const TXT={en:{integer:'Integer',rational:'Rational',irrational:'Irrational',pause:'Pause',play:'Play',speed:'Speed',soundEnable:'🔈 Tap to enable sound',soundOff:'🔇 Sound off',soundOn:'🔊 Sound on',waiting:'Waiting for your numbers…',idle1:'Type your numbers above',idle2:'then press “Roll them” to watch them fall into the wells',errEmpty:'Please type at least one number.',errMany:'Please use at most 10 numbers.',errRead:t=>`Could not read “${t}”. Try forms like 2.7, 5/2, pi or sqrt(2).`,errRange:t=>`“${t}” is outside the range −9 to 9.`,caps:['Start with a number line holding your numbers: integers, rationals and irrationals.','Lift the whole number line onto y = x, the bisector of the 1st and 3rd quadrants. The points ride along.','Now dig a pit at every integer point of the line.','The line is a slope, so each point rolls like a log down to the left and drops into the first pit it reaches. Integers already sit above a pit.','The value of each pit is the floor of the number that fell into it. The table below lists every result.']},fa:{integer:'صحیح',rational:'گویا',irrational:'گنگ',pause:'مکث',play:'ادامه',speed:'سرعت',soundEnable:'🔈 برای فعال‌کردن صدا لمس کنید',soundOff:'🔇 صدا خاموش',soundOn:'🔊 صدا روشن',waiting:'منتظر واردکردن عددها…',idle1:'عددها را در کادر بالا وارد کنید',idle2:'سپس «شروع حرکت» را بزنید تا افتادن آن‌ها در گودال‌ها را ببینید',errEmpty:'لطفاً دست‌کم یک عدد وارد کنید.',errMany:'لطفاً حداکثر ۱۰ عدد وارد کنید.',errRead:t=>`عبارت «${t}» قابل‌خواندن نیست. نمونه‌ها: ۲٫۷، ۵/۲، pi یا sqrt(2).`,errRange:t=>`عبارت «${t}» خارج از بازهٔ ۹- تا ۹ است.`,caps:['روی محور اعداد، عددهای صحیح، گویا و گنگ را قرار می‌دهیم.','تمام محور اعداد را روی خط y = x، نیمساز ربع اول و سوم، بالا می‌بریم. نقطه‌ها همراه خط حرکت می‌کنند.','حالا در محل هر عدد صحیح روی خط، یک گودال ایجاد می‌کنیم.','چون خط شیب دارد، هر نقطه مانند کُنده‌ای به سمت چپ می‌غلتد و در نخستین گودال می‌افتد. عددهای صحیح از ابتدا بالای گودال قرار دارند.','عدد هر گودال برابر جزء صحیحِ عددی است که در آن افتاده است. همهٔ نتیجه‌ها در جدول آمده‌اند.']}};
+function tr(k,...args){const v=TXT[lang][k];return typeof v==='function'?v(...args):v;}
+const FONT='Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif',COL={i:'#34d399',q:'#60a5fa',r:'#fb7185'},GOLD='#fbbf24';
+let P=[],nmin,nmax,S,OX,OY,R,HW,D,tFin,TOT,lo,hi,T=0,playing=true,speed=1,last=0,capI=-1,rows=[];
+const typeName=k=>tr(k==='i'?'integer':k==='q'?'rational':'irrational');
+const X=x=>OX+x*S,Y=y=>OY-y*S;
+const $=id=>document.getElementById(id),cap=$('cap'),sl=$('sl'),fin=$('fin'),pl=$('pl'),pills=[...document.querySelectorAll('#st span')];
+const stars=[...Array(70)].map((_,i)=>({x:i*173%W,y:i*389%H,r:.6+(i%3)*.5,ph:i}));
+function ev(t){
+ const original=t.trim();
+ let s=original.toLowerCase().replace(/[۰-۹]/g,ch=>String(ch.charCodeAt(0)-0x06f0)).replace(/[٠-٩]/g,ch=>String(ch.charCodeAt(0)-0x0660)).replace(/٫/g,'.').replace(/٬/g,'').replace(/π/g,'pi').replace(/−/g,'-').replace(/√\s*/g,'sqrt');
+ s=s.replace(/sqrt\s*(\d+(?:\.\d+)?)/g,'sqrt($1)');
+ if(!s)return null;
+ const tokens=s.match(/(?:\d+(?:\.\d*)?|\.\d+|sqrt|pi|[()+\-*/^])/g);
+ if(!tokens||tokens.join('')!==s.replace(/\s+/g,''))return NaN;
+ let i=0;
+ const peek=()=>tokens[i],take=()=>tokens[i++];
+ function primary(){
+   const z=take();
+   if(z===undefined)throw Error('Expected a value');
+   if(z==='+')return unary();
+   if(z==='-')return -unary();
+   if(z==='('){const v=add();if(take()!==')')throw Error('Missing closing parenthesis');return v}
+   if(z==='pi')return Math.PI;
+   if(z==='sqrt'){if(take()!=='(')throw Error('Use sqrt(number)');const v=add();if(take()!==')'||v<0)throw Error('Invalid square root');return Math.sqrt(v)}
+   if(z==='(')return add();
+   if(/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(z))return Number(z);
+   throw Error('Expected a number');
+ }
+ function power(){let a=primary();if(peek()==='^'){take();a=a**unary()}return a}
+ function unary(){if(peek()==='+'){take();return unary()}if(peek()==='-'){take();return -unary()}return power()}
+ function mul(){let a=unary();while(peek()==='*'||peek()==='/'){const op=take(),b=unary();a=op==='*'?a*b:a/b}return a}
+ function add(){let a=mul();while(peek()==='+'||peek()==='-'){const op=take(),b=mul();a=op==='+'?a+b:a-b}return a}
+ try{const v=add();if(i!==tokens.length||!Number.isFinite(v))return NaN;return {v,s:original}}catch(e){return NaN}
+}
+function parse(str){
+ let parts=str.replace(/،/g,',').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+ if(parts.length===1&&!/[*\/^()]/.test(parts[0]))parts=parts[0].split(/\s+/);
+ if(!parts.length)throw tr('errEmpty');
+ if(parts.length>10)throw tr('errMany');
+ return parts.map(t=>{const r=ev(t);
+  if(!r||typeof r!=='object'||!isFinite(r.v))throw tr('errRead',t);
+  if(Math.abs(r.v)>9)throw tr('errRange',t);
+  const isInt=Number.isInteger(r.v),v=r.v;
+  const label=mn(t.replace(/\s+/g,'').replace(/sqrt\(?(\d+(\.\d+)?)\)?/g,'√$1').replace(/sqrt/g,'√').replace(/pi/gi,'π'));
+  return {v,t:isInt?'i':(/pi|sqrt|√|π/i.test(t)?'r':'q'),s:label}})}
+function setup(items){
+ P=items;const cnt={};
+ P.forEach((p,i)=>{p.n=Math.floor(p.v);cnt[p.n]=(cnt[p.n]??-1)+1;p.lv=cnt[p.n];p.fr=p.t==='i'?0:p.v-p.n;p.ts=12+i*.6;p.dr=p.fr?.7+p.fr*1.2:0;p.tl=p.ts+p.dr+.55;p.tp=.3+i*.35});
+ const mc=Math.max(...Object.values(cnt))+1;
+ nmin=Math.min(0,...P.map(p=>p.n));nmax=Math.max(0,...P.map(p=>p.n));
+ lo=nmin-2.1;hi=nmax+2.2;S=Math.min(W/(hi-lo+.4),H/(hi-lo+1.4));
+ OX=W/2-S*(lo+hi)/2;OY=H/2+S*((lo-1.2)+hi)/2;
+ R=Math.max(.15,9.5/S);HW=R*1.15;D=Math.min(2*HW+.05+2*R*(mc-1),Math.max(.75,2*HW+.1));
+ tFin=Math.max(...P.map(p=>p.tl));TOT=tFin+3;sl.max=TOT;
+ $('tb').innerHTML=P.map(p=>`<tr class="r"><td><b class="m">${p.s}</b></td><td><span class="dot" style="background:${COL[p.t]}"></span>${typeName(p.t)}</td><td>${fmt(parseFloat(p.v.toFixed(4)))}</td><td><b class="m">${mn(p.n)}</b></td><td class="m">${mn(p.n)} ≤ ${fmt(parseFloat(p.v.toFixed(3)))} &lt; ${mn(p.n+1)}</td></tr>`).join('');
+ rows=[...$('tb').children];
+ CAPS=[[0,tr('caps')[0]],[5,tr('caps')[1]],[9.5,tr('caps')[2]],[12,tr('caps')[3]],[tFin,tr('caps')[4]]];
+ T=0;capI=-1;playing=true;pl.textContent=tr('pause')}
+let CAPS=[];
+function tp(s,x,y,col,sz,al,w){c.globalAlpha=al;c.font=`${w||700} ${sz}px ${FONT}`;c.fillStyle=col;c.textAlign='center';c.textBaseline='middle';c.fillText(s,x,y);c.globalAlpha=1}
+function seg(a,b,d,e){c.beginPath();c.moveTo(X(a),Y(b));c.lineTo(X(d),Y(e));c.stroke()}
+const hasPit=n=>Number.isInteger(n)&&n>=nmin&&n<=nmax;
+function pos(p,t,k,nx,ny){const u=p.dr?cl((t-p.ts)/p.dr):0,s=p.v-p.fr*u*u,f=cl((t-p.ts-p.dr)/.55);let cx=s+R*nx,cy=k*s+R*ny;
+ if(f>0){cx=lerp(cx,p.n,f);cy=lerp(cy,p.n-D+R+p.lv*2*R,f*f)}return{cx,cy,s,f,u}}
+function draw(){
+ const k=ease(cl((T-5)/4)),pa=cl((T-9.5)/1.5),ya=cl(T-4.5),L=Math.hypot(1,k),nx=-k/L,ny=1/L,now=performance.now()/1000;
+ const bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#0f172a');bg.addColorStop(1,'#2a1b4e');c.fillStyle=bg;c.fillRect(0,0,W,H);
+ stars.forEach(s=>{c.fillStyle=`rgba(255,255,255,${.2+.2*Math.sin(now*2+s.ph)})`;c.beginPath();c.arc(s.x,s.y,s.r,0,7);c.fill()});
+ c.lineCap='round';c.lineJoin='round';
+ c.strokeStyle='rgba(148,163,184,.4)';c.lineWidth=1.5;seg(lo,0,hi,0);c.globalAlpha=ya;seg(0,lo-1,0,hi);c.globalAlpha=1;
+ tp('x',X(hi)-8,Y(0)-14,'#94a3b8',16,1);tp('y',X(0)+14,Y(hi)+6,'#94a3b8',16,ya);
+ const pts=[nmin-.6];for(let n=nmin;n<=nmax+1;n++)pts.push(n);pts.push(nmax+1.4);
+ c.shadowColor=GOLD;c.shadowBlur=14*k;c.strokeStyle=GOLD;c.lineWidth=4.5;
+ for(let j=0;j<pts.length-1;j++){let a=pts[j],b=pts[j+1];const e=HW*pa;if(hasPit(a))a+=e;if(hasPit(b))b-=e;seg(a,k*a,b,k*b)}
+ c.shadowBlur=0;c.lineWidth=2.5;
+ for(let n=nmin;n<=nmax+1;n++){const X0=X(n),Y0=Y(k*n);c.globalAlpha=hasPit(n)?1-pa:1;c.beginPath();c.moveTo(X0-nx*7,Y0+ny*7);c.lineTo(X0+nx*7,Y0-ny*7);c.stroke();c.globalAlpha=1;tp(mn(n),X0,Y0+28,'#cbd5e1',17,1-k)}
+ tp('y = x',X(nmax+1.2)+10,Y(nmax+1.2)-34,GOLD,22,k,800);
+ if(pa>0)for(let n=nmin;n<=nmax;n++){
+  c.globalAlpha=pa;c.beginPath();c.moveTo(X(n-HW),Y(n-HW));c.lineTo(X(n-HW),Y(n-D+HW));c.arc(X(n),Y(n-D+HW),HW*S,Math.PI,0,true);c.lineTo(X(n+HW),Y(n+HW));
+  const pg=c.createLinearGradient(0,Y(n+HW),0,Y(n-D));pg.addColorStop(0,'rgba(99,102,241,.55)');pg.addColorStop(1,'rgba(2,6,23,.95)');c.fillStyle=pg;c.fill();c.shadowColor='#818cf8';c.shadowBlur=8;c.strokeStyle='#c7d2fe';c.lineWidth=2.5;c.stroke();c.shadowBlur=0;c.globalAlpha=1;
+  tp(mn(n),X(n),Y(n-D)+22,'#cbd5e1',18,pa)}
+ P.forEach(p=>{
+  if(T<p.tp)return;
+  const sc=ease(cl((T-p.tp)/.4)),q=pos(p,T,k,nx,ny),col=COL[p.t],r=R*S*sc;
+  if(q.u>0&&q.u<1&&k===1)for(let j=4;j>=1;j--){const g=pos(p,T-j*.05,k,nx,ny);c.globalAlpha=.07*(5-j);c.fillStyle=col;c.beginPath();c.arc(X(g.cx),Y(g.cy),r*.9,0,7);c.fill();c.globalAlpha=1}
+  const rp=(T-p.tl)/.8;
+  if(rp>0&&rp<1){c.globalAlpha=1-rp;c.strokeStyle=col;c.lineWidth=3;c.beginPath();c.ellipse(X(p.n),Y(p.n-D)+2,rp*40,rp*14,0,0,7);c.stroke();
+   c.fillStyle=col;for(let j=0;j<10;j++){const a=j/10*6.283,d=ease(rp)*52;c.beginPath();c.arc(X(p.n)+Math.cos(a)*d,Y(p.n-D)-8-Math.abs(Math.sin(a))*d*.9+rp*rp*30,3,0,7);c.fill()}c.globalAlpha=1}
+  if(T<p.tl)tp(p.s,X(q.cx)-4,Y(q.cy)-32,col,24,1-q.f,800);
+  c.save();c.translate(X(q.cx),Y(q.cy));c.rotate(-((p.v-q.s)*Math.SQRT2)/R);
+  c.beginPath();c.arc(0,0,r,0,7);c.fillStyle=col;c.fill();
+  const gr=c.createRadialGradient(-r*.35,-r*.35,r*.1,0,0,r);gr.addColorStop(0,'rgba(255,255,255,.75)');gr.addColorStop(.5,'rgba(255,255,255,0)');gr.addColorStop(1,'rgba(0,0,0,.35)');c.fillStyle=gr;c.fill();
+  c.strokeStyle='rgba(0,0,0,.3)';c.lineWidth=1.5;c.beginPath();c.arc(0,0,r*.62,0,7);c.stroke();c.beginPath();c.arc(0,0,r*.3,0,7);c.stroke();
+  c.beginPath();c.moveTo(-r,0);c.lineTo(r,0);c.lineWidth=2;c.strokeStyle='rgba(0,0,0,.45)';c.stroke();c.restore();
+  if(T>=p.tl){
+   const a=ease(cl((T-p.tl)/.35)),str=`⌊${p.s}⌋ = ${mn(p.n)}`,row=Math.floor(p.lv/2),up=p.lv%2===0;
+   c.font=`800 18px ${FONT}`;const w=c.measureText(str).width+22;
+   const tx=X(p.n)+(up?-(w/2+14):(w/2+18)),ty=Y(p.n)+(up?-34-row*34:34+row*34)+(1-a)*12;
+   c.globalAlpha=a;c.fillStyle=col;c.beginPath();c.roundRect(tx-w/2,ty-15,w,30,15);c.fill();
+   c.fillStyle='#0f172a';c.textAlign='center';c.textBaseline='middle';c.fillText(str,tx,ty+1);c.globalAlpha=1}
+ });
+ let ci=0;CAPS.forEach((a,i)=>{if(T>=a[0])ci=i});
+ if(ci!==capI){capI=ci;cap.textContent=CAPS[ci][1];pills.forEach((el,i)=>el.classList.toggle('on',i===ci))}
+ rows.forEach((r,i)=>r.classList.toggle('on',T>=P[i].tl));
+ fin.classList.toggle('on',T>=tFin);sl.value=T}
+let AC=null,master,muted=false,tapped=false,fresh=false;
+function audio(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)();master=AC.createGain();master.gain.value=.5;master.connect(AC.destination)}catch(e){}}if(AC&&AC.state==='suspended')AC.resume();return AC}
+function tone(f,t0,dur,type,vol,f2){const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.setValueAtTime(f,t0);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t0+dur);g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+.01);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);o.connect(g);g.connect(master);o.start(t0);o.stop(t0+dur+.05)}
+function noise(t0,dur,f1,f2,vol){const n=Math.floor(AC.sampleRate*dur),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const s=AC.createBufferSource();s.buffer=b;const fl=AC.createBiquadFilter();fl.type='bandpass';fl.frequency.setValueAtTime(f1,t0);fl.frequency.exponentialRampToValueAtTime(f2,t0+dur);const g=AC.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.exponentialRampToValueAtTime(vol,t0+dur*.3);g.gain.exponentialRampToValueAtTime(.0001,t0+dur);s.connect(fl);fl.connect(g);g.connect(master);s.start(t0)}
+const note=n=>{const i=n+12,sc=[0,2,4,7,9];return 220*Math.pow(2,(sc[i%5]+12*Math.floor(i/5))/12)};
+function sfx(a,b){if(muted||!AC||AC.state!=='running'||b<=a||b-a>.5)return;const t=AC.currentTime,x=v=>a<v&&b>=v;
+ P.forEach((p,i)=>{
+  if(x(p.tp))tone(520*Math.pow(2,[0,2,4,7,9,12,14,16,19,21][i]/12),t,.18,'sine',.25);
+  if(p.dr&&x(p.ts))noise(t,p.dr/speed+.2,300,900,.35);
+  if(x(p.tl)){const f=note(p.n);tone(f*2,t,.9,'sine',.3);tone(f*4,t,.5,'triangle',.08);tone(160,t,.15,'sine',.4,60)}
+ });
+ if(x(5))noise(t,.9/speed,200,2500,.4);
+ for(let n=nmin;n<=nmax;n++)if(x(9.5+(n-nmin)*.12))tone(130,t,.14,'sine',.35,55);
+ if(x(tFin))[0,4,7,12].forEach((s,j)=>tone(523.25*Math.pow(2,s/12),t+j*.12,.7,'triangle',.22))}
+function drawIdle(){const now=performance.now()/1000,bg=c.createLinearGradient(0,0,W,H);bg.addColorStop(0,'#0f172a');bg.addColorStop(1,'#2a1b4e');c.fillStyle=bg;c.fillRect(0,0,W,H);stars.forEach(s=>{c.fillStyle=`rgba(255,255,255,${.2+.2*Math.sin(now*2+s.ph)})`;c.beginPath();c.arc(s.x,s.y,s.r,0,7);c.fill()});tp(tr('idle1'),W/2,H/2-20,'#e2e8f0',lang==='fa'?34:40,1,800);tp(tr('idle2'),W/2,H/2+32,'#a5b4fc',lang==='fa'?19:22,1,700);cap.textContent=tr('waiting')}
+function frame(t){
+ if(playing){const t0=T;T=Math.min(TOT,T+(t-last)/1000*speed);sfx(t0,T);if(T>=TOT){playing=false;pl.textContent=tr('play')}}
+ last=t;idle?drawIdle():draw();requestAnimationFrame(frame)}
+function run(str){const e=$('err');try{setup(parse(str));idle=false;e.textContent=''}catch(x){e.textContent=String(x)}}
+$('f').onsubmit=ev=>{ev.preventDefault();run($('in').value)};
+document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{$('in').value=b.dataset.v;run(b.dataset.v)});
+pl.onclick=()=>{if(idle)return;if(T>=TOT)T=0;playing=!playing;pl.textContent=playing?tr('pause'):tr('play')};
+$('rs').onclick=()=>{if(idle)return;T=0;playing=true;pl.textContent=tr('pause')};
+$('sp').onchange=e=>speed=+e.target.value;
+const snd=$('snd'),updSnd=()=>snd.textContent=!tapped?tr('soundEnable'):muted?tr('soundOff'):tr('soundOn');
+document.addEventListener('pointerdown',()=>{fresh=!tapped;tapped=true;audio();setTimeout(updSnd,60)},true);
+snd.onclick=()=>{if(fresh){fresh=false;updSnd();return}muted=!muted;updSnd()};
+sl.oninput=()=>{T=+sl.value;playing=false;pl.textContent=tr('play')};
+$('pr').onclick=()=>{const keep=T;T=TOT;draw();try{$('pimg').src=cv.toDataURL('image/png')}catch(e){}try{window.print()}catch(e){}T=keep};
+if(matchMedia('(prefers-reduced-motion:reduce)').matches)playing=false;
+let idle=true;playing=false;pl.textContent=tr('play');
+if(matchMedia('(prefers-reduced-motion:reduce)').matches){playing=false;pl.textContent=tr('play')}
+
+// Feature suite: live graph, comparisons, practice, solver and presentation mode.
+const extraText={en:{below:(x,n)=>`${fmt(x)} is between ${n} and ${n+1}, so its floor is ${n}.`,exact:x=>`${fmt(x)} is already an integer, so its floor is itself.`,quizQ:'Question',of:'of',correct:'Correct — nice work!',wrong:n=>`Not quite. The floor is ${n}.`,complete:s=>`Round complete: ${s} out of 5 correct.`,answer:'Your answer',eval:'Evaluated value',interval:'Interval',solverErr:'Enter a valid expression between −9 and 9.',compare:(x,f,v)=>`At x = ${fmt(x)}: floor = ${Math.floor(x)}, ${f} = ${v}.`},fa:{below:(x,n)=>`عدد ${fmt(x)} بین ${fmt(n)} و ${fmt(n+1)} است؛ پس جزء صحیح آن ${fmt(n)} است.`,exact:x=>`عدد ${fmt(x)} خودش صحیح است؛ پس جزء صحیح آن برابر خودش است.`,quizQ:'پرسش',of:'از',correct:'درست است؛ آفرین!',wrong:n=>`نه کاملاً؛ جزء صحیح برابر ${fmt(n)} است.`,complete:s=>`پایان دور: ${fmt(s)} پاسخ درست از ۵ پرسش.`,answer:'پاسخ شما',eval:'مقدار محاسبه‌شده',interval:'بازه',solverErr:'یک عبارت معتبر با مقدار بین ۹- و ۹ وارد کنید.',compare:(x,f,v)=>`برای x = ${fmt(x)}: جزء صحیح = ${fmt(Math.floor(x))}، ${f} = ${fmt(v)}.`}};
+function fmt(n){return new Intl.NumberFormat(lang==='fa'?'fa-IR':'en-US',{maximumFractionDigits:4,useGrouping:false}).format(n).replace(/-/g,'−')}
+const lx=$('live-x'), liveChart=$('live-chart'), compareChart=$('compare-chart');
+function graphBase(canvas){const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;ctx.clearRect(0,0,w,h);const bg=ctx.createLinearGradient(0,0,w,h);bg.addColorStop(0,'#111323');bg.addColorStop(1,'#211a3c');ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);const x0=58,y0=h-44,plotW=w-88,plotH=h-82;return {ctx,w,h,x0,y0,plotW,plotH,px:x=>x0+(x+5)/10*plotW,py:y=>y0-(y+5)/10*plotH};}
+function drawLive(){if(!liveChart)return;const x=+lx.value,n=Math.floor(x),g=graphBase(liveChart),{ctx,w,h,x0,y0,plotW,plotH,px,py}=g;ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.fillStyle='#9ca3bd';ctx.font='14px system-ui';ctx.textAlign='center';ctx.textBaseline='top';for(let i=-5;i<=5;i++){ctx.beginPath();ctx.moveTo(px(i),py(-5));ctx.lineTo(px(i),py(5));ctx.stroke();ctx.beginPath();ctx.moveTo(px(-5),py(i));ctx.lineTo(px(5),py(i));ctx.stroke();ctx.fillText(fmt(i),px(i),y0+10)}ctx.strokeStyle='rgba(255,255,255,.45)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px(-5),py(0));ctx.lineTo(px(5),py(0));ctx.moveTo(px(0),py(-5));ctx.lineTo(px(0),py(5));ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=4;ctx.lineCap='round';for(let k=-5;k<=5;k++){const a=Math.max(-5,k),b=Math.min(5,k+1);ctx.beginPath();ctx.moveTo(px(a),py(k));ctx.lineTo(px(b),py(k));ctx.stroke();if(k>-5){ctx.fillStyle='#a69aff';ctx.beginPath();ctx.arc(px(k),py(k),4.5,0,Math.PI*2);ctx.fill();}ctx.fillStyle='#111323';ctx.beginPath();ctx.arc(px(k+1),py(k),4.5,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a69aff';ctx.lineWidth=2;ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=4;}ctx.strokeStyle='#fbbf24';ctx.lineWidth=2;ctx.setLineDash([5,5]);ctx.beginPath();ctx.moveTo(px(x),py(0));ctx.lineTo(px(x),py(n));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(px(x),py(n),8,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.fillStyle='#fff';ctx.font='700 17px system-ui';ctx.textAlign='left';ctx.fillText(`x = ${fmt(x)}`,Math.min(px(x)+12,w-140),Math.max(18,py(n)-25));const exact=Number.isInteger(x);$('live-x-label').textContent=fmt(x);$('live-floor').textContent=`⌊${fmt(x)}⌋ = ${fmt(n)}`;$('live-interval').textContent=`${fmt(n)} ≤ ${fmt(x)} < ${fmt(n+1)}`;$('boundary-note').textContent=exact?extraText[lang].exact(x):extraText[lang].below(x,n);drawCompare();}
+function compareValue(x,kind){if(kind==='ceil')return Math.ceil(x);if(kind==='round')return Math.round(x);if(kind==='identity')return x;return Math.abs(x)}
+function drawCompare(){if(!compareChart)return;const kind=$('compare-function').value,x=+lx.value,g=graphBase(compareChart),{ctx,w,h,px,py}=g;ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.fillStyle='#9ca3bd';ctx.font='13px system-ui';ctx.textAlign='center';for(let i=-5;i<=5;i++){ctx.beginPath();ctx.moveTo(px(i),py(-5));ctx.lineTo(px(i),py(5));ctx.moveTo(px(-5),py(i));ctx.lineTo(px(5),py(i));ctx.stroke();ctx.fillText(fmt(i),px(i),h-32)}ctx.strokeStyle='rgba(255,255,255,.35)';ctx.beginPath();ctx.moveTo(px(-5),py(0));ctx.lineTo(px(5),py(0));ctx.moveTo(px(0),py(-5));ctx.lineTo(px(0),py(5));ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=3.5;for(let k=-5;k<5;k++){ctx.beginPath();ctx.moveTo(px(k),py(k));ctx.lineTo(px(k+1),py(k));ctx.stroke();ctx.fillStyle='#211a3c';ctx.beginPath();ctx.arc(px(k+1),py(k),4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a69aff';ctx.lineWidth=2;ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=3.5;}if(kind==='identity'||kind==='abs'||kind==='round'){ctx.strokeStyle='#60a5fa';ctx.lineWidth=3;ctx.beginPath();let first=true;for(let xx=-5;xx<=5;xx+=.015){const yy=compareValue(xx,kind);if(first){ctx.moveTo(px(xx),py(yy));first=false}else ctx.lineTo(px(xx),py(yy))}ctx.stroke()}else{ctx.strokeStyle='#60a5fa';ctx.lineWidth=3;for(let k=-5;k<=4;k++){const yy=k+1;ctx.beginPath();ctx.moveTo(px(k),py(yy));ctx.lineTo(px(k+1),py(yy));ctx.stroke();ctx.fillStyle='#211a3c';ctx.beginPath();ctx.arc(px(k+1),py(yy),4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#60a5fa';ctx.lineWidth=2;ctx.stroke();ctx.strokeStyle='#60a5fa';ctx.lineWidth=3;}}const val=compareValue(x,kind),names={ceil:'⌈x⌉',round:'round(x)',identity:'x',abs:'|x|'};$('compare-legend-label').textContent=names[kind];$('compare-readout').textContent=extraText[lang].compare(x,names[kind],val);ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(px(x),py(val),7,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();}
+lx.addEventListener('input',drawLive);$('compare-function').addEventListener('change',drawCompare);
+document.querySelectorAll('.feature-tab').forEach(btn=>btn.addEventListener('click',()=>{document.querySelectorAll('.feature-tab').forEach(b=>{const active=b===btn;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active))});document.querySelectorAll('.feature-panel').forEach(p=>{const active=p.id==='panel-'+btn.dataset.panel;p.hidden=!active;p.classList.toggle('active',active)});if(btn.dataset.panel==='playground')drawLive();if(btn.dataset.panel==='compare')drawCompare()}));
+let quizIndex=0,quizScore=0,quizQuestions=[],quizAnswered=false;
+function makeQuiz(){quizQuestions=Array.from({length:5},()=>{const options=[-4.7,-3.1,-2.5,-1.2,-.5,0,0.2,.8,1,1.4,2.9,3.6,4.2];let v=options[Math.floor(Math.random()*options.length)];return {v,answer:Math.floor(v)}});quizIndex=0;quizScore=0;quizAnswered=false;renderQuiz()}
+function renderQuiz(){const done=quizIndex>=5;$('quiz-progress-text').textContent=done?(lang==='fa'?'پایان چالش':'Challenge complete'):`${extraText[lang].quizQ} ${fmt(quizIndex+1)} ${extraText[lang].of} ${fmt(5)}`;$('quiz-progress-bar').style.width=`${Math.min(quizIndex,5)/5*100}%`;$('quiz-score').textContent=`${fmt(quizScore)} / ${fmt(5)}`;$('quiz-card').querySelector('form').hidden=done;$('quiz-expression').textContent=done?(lang==='fa'?'آفرین!':'Well played!'):`⌊${fmt(quizQuestions[quizIndex].v)}⌋ = ?`;$('quiz-answer').value='';$('quiz-answer').disabled=done;$('quiz-feedback').textContent=done?extraText[lang].complete(quizScore):'';$('quiz-feedback').className='quiz-feedback';$('quiz-next').hidden=true;$('quiz-restart').hidden=!done;$('quiz-next').textContent=lang==='fa'?'پرسش بعدی ←':'Next question →';}
+$('quiz-form').addEventListener('submit',e=>{e.preventDefault();if(quizAnswered||quizIndex>=5)return;const ans=ev($('quiz-answer').value);if(!ans||typeof ans!=='object'||!Number.isFinite(ans.v)){ $('quiz-feedback').textContent=lang==='fa'?'یک عدد معتبر وارد کنید.':'Enter a valid number.';$('quiz-feedback').className='quiz-feedback bad';return}quizAnswered=true;const correct=Number.isInteger(ans.v)&&ans.v===quizQuestions[quizIndex].answer;if(correct)quizScore++;$('quiz-feedback').textContent=correct?extraText[lang].correct:extraText[lang].wrong(quizQuestions[quizIndex].answer);$('quiz-feedback').className='quiz-feedback '+(correct?'good':'bad');$('quiz-score').textContent=`${fmt(quizScore)} / ${fmt(5)}`;$('quiz-next').hidden=false;$('quiz-progress-bar').style.width=`${(quizIndex+1)/5*100}%`;});$('quiz-next').addEventListener('click',()=>{quizIndex++;quizAnswered=false;renderQuiz()});$('quiz-restart').addEventListener('click',makeQuiz);
+function solveExpression(){const str=$('solver-input').value.trim(),r=ev(str);$('solver-error').textContent='';if(!r||typeof r!=='object'||!Number.isFinite(r.v)||Math.abs(r.v)>9){$('solver-error').textContent=extraText[lang].solverErr;return}const value=r.v,n=Math.floor(value),clean=str.replace(/-/g,'−');$('solution-original').textContent=clean;$('solution-evaluated').textContent=fmt(value);$('solution-eval-note').textContent=lang==='fa'?`مقدار عبارت برابر ${fmt(value)} است.`:`The expression evaluates to ${fmt(value)}.`;$('solution-answer').textContent=`⌊${fmt(value)}⌋ = ${fmt(n)}`;$('solution-explanation').textContent=`${fmt(n)} ≤ ${fmt(value)} < ${fmt(n+1)}${lang==='fa'?'؛ پس جزء صحیح برابر است با '+fmt(n)+'.':', so the floor is '+fmt(n)+'.'}`;}
+$('solver-form').addEventListener('submit',e=>{e.preventDefault();solveExpression()});
+let slide=0;const slideNotes={en:['Remember: floor is not the same as rounding.','For a negative non-integer, floor moves to the more negative integer.','At an exact integer, the floor stays exactly there.'],fa:['به یاد داشته باشید: جزء صحیح با گرد کردن یکسان نیست.','برای عدد منفیِ غیرصحیح، جزء صحیح عدد صحیحِ کوچک‌تر است.','اگر عدد خودش صحیح باشد، جزء صحیح همان عدد است.']};function updatePresentation(){const x=+$('presentation-x').value,n=Math.floor(x);$('presentation-result').textContent=`⌊${fmt(x)}⌋ = ${fmt(n)}`;$('presentation-interval').textContent=`${fmt(n)} ≤ ${fmt(x)} < ${fmt(n+1)}`;$('presentation-slide-note').textContent=slideNotes[lang][slide%3];$('presentation-title').textContent=lang==='fa'?['تابع جزء صحیح','عددهای منفی','مرزهای صحیح'][slide%3]:['The floor function','Negative numbers','Integer boundaries'][slide%3];$('presentation-explain').textContent=lang==='fa'?['جزء صحیح هر عدد حقیقی، بزرگ‌ترین عدد صحیح کوچک‌تر یا مساوی آن عدد است.','برای عددهای منفی، جزء صحیح به سمت منفی‌تر می‌رود؛ مثلاً ⌊−۳٫۵⌋ = −۴.','اگر x عدد صحیح باشد، ⌊x⌋ = x.'][slide%3]:['The floor of a real number is the greatest integer less than or equal to that number.','For negative non-integers, floor moves downward: ⌊−3.5⌋ = −4.','If x is an integer, then ⌊x⌋ = x.'][slide%3];}
+function openPresentation(){ $('presentation-overlay').hidden=false;slide=0;updatePresentation();try{$('presentation-overlay').requestFullscreen?.()}catch(e){}$('presentation-close').focus()}function closePresentation(){ $('presentation-overlay').hidden=true;if(document.fullscreenElement)document.exitFullscreen?.();$('present-launch').focus()}$('present-launch').addEventListener('click',openPresentation);$('presentation-close').addEventListener('click',closePresentation);$('presentation-x').addEventListener('input',updatePresentation);$('presentation-next').addEventListener('click',()=>{slide=(slide+1)%3;updatePresentation()});$('presentation-prev').addEventListener('click',()=>{slide=(slide+2)%3;updatePresentation()});document.addEventListener('keydown',e=>{if($('presentation-overlay').hidden)return;if(e.key==='Escape'){closePresentation();return}if(e.key==='ArrowRight'||e.key==='ArrowLeft'){const dir=e.key==='ArrowRight'?1:-1;$('presentation-x').value=cl(+$('presentation-x').value+dir*.1,-9,9);updatePresentation();e.preventDefault()}});
+const studioDescriptions={
+ en:{floor:'The greatest integer less than or equal to x.',ceil:'The smallest integer greater than or equal to x.',abs:'Distance from zero; never negative.',identity:'The output is exactly the input.',round:'The nearest integer (half values round toward positive infinity in this JavaScript model).',fraction:'The fractional part x − ⌊x⌋ is always in [0, 1).',sign:'Returns −1 for negatives, 0 at zero, and 1 for positives.'},
+ fa:{floor:'بزرگ‌ترین عدد صحیح کوچک‌تر یا مساوی x.',ceil:'کوچک‌ترین عدد صحیح بزرگ‌تر یا مساوی x.',abs:'فاصله از صفر؛ همیشه نامنفی است.',identity:'خروجی دقیقاً برابر ورودی است.',round:'نزدیک‌ترین عدد صحیح؛ در نیمه‌ها به سمت مثبت گرد می‌شود.',fraction:'جزء کسری x − ⌊x⌋ همیشه در بازهٔ [۰، ۱) است.',sign:'برای منفی‌ها ۱−، در صفر ۰ و برای مثبت‌ها ۱ برمی‌گرداند.'}
+};
+function studioValue(x,k){switch(k){case'floor':return Math.floor(x);case'ceil':return Math.ceil(x);case'abs':return Math.abs(x);case'identity':return x;case'round':return Math.floor(x+0.5);case'fraction':return x-Math.floor(x);case'sign':return Math.sign(x);default:return Math.floor(x)}}
+function studioName(k){return ({floor:'⌊x⌋',ceil:'⌈x⌉',abs:'|x|',identity:'x',round:'round(x)',fraction:'x − ⌊x⌋',sign:'sign(x)'})[k]||'⌊x⌋'}
+function drawStudio(){const canvas=$('studio-chart');if(!canvas)return;const k=$('studio-function').value,x=+$('studio-x').value,y=studioValue(x,k),g=graphBase(canvas),{ctx,w,h,px,py}=g;
+ ctx.lineWidth=1;ctx.strokeStyle='rgba(255,255,255,.12)';ctx.fillStyle='#a8acc4';ctx.font='13px system-ui';ctx.textAlign='center';for(let i=-5;i<=5;i++){ctx.beginPath();ctx.moveTo(px(i),py(-5));ctx.lineTo(px(i),py(5));ctx.moveTo(px(-5),py(i));ctx.lineTo(px(5),py(i));ctx.stroke();ctx.fillText(fmt(i),px(i),h-31)}ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(px(-5),py(0));ctx.lineTo(px(5),py(0));ctx.moveTo(px(0),py(-5));ctx.lineTo(px(0),py(5));ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=3.5;ctx.lineCap='round';
+ if(k==='floor'||k==='ceil'||k==='fraction'||k==='round'){
+  for(let a=-5;a<5;a+=1){let yy=k==='floor'?a:k==='ceil'?a+1:k==='fraction'?0:a; if(k==='fraction'){ctx.strokeStyle='#a69aff';ctx.beginPath();ctx.moveTo(px(a),py(0));ctx.lineTo(px(a+1),py(1));ctx.stroke();ctx.fillStyle='#a69aff';ctx.beginPath();ctx.arc(px(a),py(0),4,0,Math.PI*2);ctx.fill();ctx.fillStyle='#111323';ctx.beginPath();ctx.arc(px(a+1),py(1),4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a69aff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(px(a+1),py(1),4,0,Math.PI*2);ctx.stroke();ctx.lineWidth=3.5;continue}ctx.beginPath();ctx.moveTo(px(a),py(yy));ctx.lineTo(px(a+1),py(yy));ctx.stroke();ctx.fillStyle='#211a3c';ctx.beginPath();ctx.arc(px(a+1),py(yy),4.2,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#a69aff';ctx.lineWidth=2;ctx.stroke();ctx.strokeStyle='#a69aff';ctx.lineWidth=3.5;
+   if(k==='ceil'){ctx.fillStyle='#a69aff';ctx.beginPath();ctx.arc(px(a),py(yy),4.2,0,Math.PI*2);ctx.fill();}
+  }
+ }else{ctx.strokeStyle='#a69aff';ctx.lineWidth=3.5;ctx.beginPath();let first=true;for(let xx=-5;xx<=5.001;xx+=.01){const yy=studioValue(xx,k);if(yy < -5.2||yy>5.2){first=true;continue}if(first){ctx.moveTo(px(xx),py(yy));first=false}else ctx.lineTo(px(xx),py(yy))}ctx.stroke();}
+ ctx.fillStyle='#fbbf24';ctx.beginPath();ctx.arc(px(x),py(Math.max(-5,Math.min(5,y))),8,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();$('studio-x-label').textContent=fmt(x);$('studio-output').textContent=`${studioName(k)} = ${fmt(y)}`;$('studio-description').textContent=studioDescriptions[lang][k];let insight='';if(k==='floor')insight=`${fmt(Math.floor(x))} ≤ ${fmt(x)} < ${fmt(Math.floor(x)+1)}${lang==='fa'?'؛ پس جزء صحیح برابر است با ':', so the floor is '}${fmt(y)}.`;else if(k==='fraction')insight=lang==='fa'?`جزء کسری برابر ${fmt(x)} − ${fmt(Math.floor(x))} = ${fmt(y)} است.`:`Fractional part = ${fmt(x)} − ${fmt(Math.floor(x))} = ${fmt(y)}.`;else insight=lang==='fa'?`برای x = ${fmt(x)}، خروجی ${studioName(k)} برابر ${fmt(y)} است.`:`At x = ${fmt(x)}, ${studioName(k)} gives ${fmt(y)}.`;$('studio-insight').textContent=insight;}
+$('studio-function').addEventListener('change',drawStudio);$('studio-x').addEventListener('input',drawStudio);
+function syncExtraLanguage(){drawLive();drawCompare();drawStudio();if(quizQuestions.length)renderQuiz();$('quiz-answer').placeholder=lang==='fa'?'پاسخ شما':'Your answer';$('quiz-answer').setAttribute('aria-label',lang==='fa'?'پاسخ شما':'Your answer');solveExpression();updatePresentation();}
+makeQuiz();solveExpression();updatePresentation();drawLive();drawStudio();
+
+requestAnimationFrame(t=>{last=t;frame(t)});
+</script>
+</body>
+</html>
