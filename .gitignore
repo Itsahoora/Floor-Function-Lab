@@ -1,0 +1,27 @@
+# Test harness and test-only files
+tests/
+
+# Generated output and dependencies
+node_modules/
+dist/
+build/
+coverage/
+
+# Local runtimes and caches
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+
+# Temporary files and logs
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*~
+
+# Operating system metadata
+.DS_Store
+Thumbs.db
+desktop.ini
