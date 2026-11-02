@@ -8,6 +8,8 @@ Explore the floor function through animated number lines, interactive graphs, an
 
 **No frameworks · No build step · No dependencies**
 
+[🚀 Open the live app](https://itsahoora.github.io/Floor-Function-Lab/)
+
 </div>
 
 ---
@@ -39,6 +41,10 @@ For example, `⌊3.7⌋ = 3`, while `⌊−3.7⌋ = −4`. Explore why with a ro
 Also included: **English and Persian**, **light and dark themes**, mobile-friendly layouts, reduced-motion support, print-ready results, shareable input links, and CSV export.
 
 ## Try it
+
+### Use it online
+
+Visit **[itsahoora.github.io/Floor-Function-Lab](https://itsahoora.github.io/Floor-Function-Lab/)**—no download or setup required.
 
 ### Open directly
 
